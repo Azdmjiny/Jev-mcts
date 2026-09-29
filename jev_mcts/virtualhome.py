@@ -25,48 +25,12 @@ def prune_graph(
     goal_spec: dict[str, list[Any]],
     vocabulary: dict[str, Any],
 ) -> dict[str, Any]:
-    """Keep the search graph small while retaining goal and interaction objects."""
-    goal_classes = {
-        key.split("_")[1]
-        for key in goal_spec
-        if len(key.split("_")) >= 3 and key.split("_")[0] in {"on", "inside"}
-    }
-    goal_ids = {
-        int(key.split("_")[2])
-        for key in goal_spec
-        if len(key.split("_")) >= 3 and key.split("_")[2].isdigit()
-    }
-    useful_classes = (
-        goal_classes
-        | set(vocabulary["objects_inside"])
-        | set(vocabulary["objects_surface"])
-    )
-    ids = {
-        int(node["id"])
-        for node in graph["nodes"]
-        if node["class_name"] in useful_classes
-        or node.get("category") in {"Rooms", "Doors", "Characters"}
-    } | goal_ids
-    # Retain ancestor room/container relations of all selected objects.
-    parents = {
-        int(edge["from_id"]): int(edge["to_id"])
-        for edge in graph["edges"]
-        if edge["relation_type"] == "INSIDE"
-    }
-    for object_id in list(ids):
-        current = object_id
-        seen = set()
-        while current in parents and current not in seen:
-            seen.add(current)
-            current = parents[current]
-            ids.add(current)
-    return {
-        "nodes": [copy.deepcopy(n) for n in graph["nodes"] if int(n["id"]) in ids],
-        "edges": [
-            copy.deepcopy(e) for e in graph["edges"]
-            if int(e["from_id"]) in ids and int(e["to_id"]) in ids
-        ],
-    }
+    """Keep every executable action target in the planning graph.
+
+    Unity can reveal an object after walking to a new room. Dropping it at reset
+    leaves a valid Unity action with no corresponding Python-graph node.
+    """
+    return copy.deepcopy(graph)
 
 
 def goal_text(goals: dict[str, int], graph: dict[str, Any]) -> str:

@@ -48,6 +48,20 @@ class BeliefState:
             if grabbable:
                 class_prior = object_priors.get(node["class_name"], [])
                 self.tracked_relations[object_id] = POSITION_RELATIONS
+                if not class_prior:
+                    # Some built-in Unity objects are absent from the source's
+                    # grab vocabulary. Give them a neutral location prior rather
+                    # than exposing their hidden true location in simulations.
+                    possible_locations = {
+                        (relation, location)
+                        for values in object_priors.values()
+                        for relation, location, _ in values
+                        if location in nodes_by_class
+                    }
+                    class_prior = [
+                        [relation, location, 1.0]
+                        for relation, location in sorted(possible_locations)
+                    ]
             else:
                 class_prior = (furniture_priors or {}).get(node["class_name"], [])
                 self.tracked_relations[object_id] = {"INSIDE"}
