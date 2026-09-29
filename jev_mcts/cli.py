@@ -24,10 +24,10 @@ def load_local_env(project_root: Path) -> None:
             os.environ.setdefault(key, value.strip().strip("'\""))
 
 
-def doctor() -> int:
+def doctor(executable_arg: Path | None = None) -> int:
     project_root = Path(__file__).resolve().parent.parent
     load_local_env(project_root)
-    executable = os.environ.get("VIRTUALHOME_EXECUTABLE", "")
+    executable = str(executable_arg or os.environ.get("VIRTUALHOME_EXECUTABLE", ""))
     print(f"host: {platform.system()} {platform.machine()}")
     print(f"Python: {sys.version.split()[0]}")
     print(f"Jev API key: {'configured' if os.getenv('TYPESAFE_API_KEY') else 'missing'}")
@@ -35,10 +35,11 @@ def doctor() -> int:
         print("Unity executable: missing (set VIRTUALHOME_EXECUTABLE)")
         return 1
     path = Path(executable).expanduser()
-    if not path.is_file():
+    actual_binary = path / "Contents/MacOS/VirtualHome" if path.suffix == ".app" else path
+    if not actual_binary.is_file():
         print(f"Unity executable: missing at {path}")
         return 1
-    details = subprocess.run(["file", str(path)], capture_output=True, text=True, check=False)
+    details = subprocess.run(["file", str(actual_binary)], capture_output=True, text=True, check=False)
     print(f"Unity executable: {details.stdout.strip() or path}")
     if platform.system() == "Darwin" and "ELF" in details.stdout:
         print("Unity executable is Linux-only; use a macOS build or Linux x86-64 runtime.")
@@ -49,7 +50,8 @@ def doctor() -> int:
 def main() -> int:
     parser = argparse.ArgumentParser(prog="jev-mcts")
     sub = parser.add_subparsers(dest="command", required=True)
-    sub.add_parser("doctor", help="check credentials and local Unity executable")
+    doctor_parser = sub.add_parser("doctor", help="check credentials and local Unity executable")
+    doctor_parser.add_argument("--executable", type=Path)
     priors_parser = sub.add_parser("prepare-priors", help="query Jev for location priors")
     priors_parser.add_argument("--output", type=Path, default=Path("results/priors"))
     priors_parser.add_argument("--max-usd", type=float, default=5.0)
@@ -80,7 +82,7 @@ def main() -> int:
     pilot_parser.add_argument("--max-seconds", type=float, default=7200.0)
     args = parser.parse_args()
     if args.command == "doctor":
-        return doctor()
+        return doctor(args.executable)
     if args.command == "prepare-priors":
         from .jev import JevClient
         from .prior import generate_priors
