@@ -1,0 +1,282 @@
+{
+  "experiment": "Jev-mcts eight-case minimal pilot",
+  "seed": 42,
+  "simulations_per_real_action": 20,
+  "max_real_actions": 30,
+  "budget_usd": 5.0,
+  "time_limit_seconds": 7200.0,
+  "elapsed_seconds": 1223.6952381134033,
+  "successes": 6,
+  "cases_completed": 8,
+  "jev_pilot_usage": {
+    "calls": 1534,
+    "input_tokens": 4524098,
+    "output_tokens": 1232210,
+    "estimated_usd": 0.190012116,
+    "models": [
+      "jev-1.13.0"
+    ]
+  },
+  "jev_prior_usage": {
+    "calls": 104,
+    "input_tokens": 70477,
+    "output_tokens": 24602,
+    "estimated_usd": 0.0029600340000000003,
+    "models": [
+      "jev-1.13.0"
+    ]
+  },
+  "cases": [
+    {
+      "case": "seen_simple",
+      "task": "put_fridge",
+      "goal": "put 1 wine inside fridge",
+      "status": "success",
+      "success": true,
+      "actions": [
+        "[walk] <wine> (369)",
+        "[grab] <wine> (369)",
+        "[walk] <fridge> (103)",
+        "[open] <fridge> (103)",
+        "[putin] <wine> (369) <fridge> (103)"
+      ],
+      "unity_failed_executions": 0,
+      "jev_usage": {
+        "calls": 20,
+        "input_tokens": 31959,
+        "output_tokens": 8197,
+        "estimated_usd": 0.001342278,
+        "models": [
+          "jev-1.13.0"
+        ]
+      }
+    },
+    {
+      "case": "seen_comp",
+      "task": "setup_table_prepare_food",
+      "goal": "put 1 coffeepot on kitchentable; put 1 wineglass on kitchentable",
+      "status": "unity_episode_done",
+      "success": false,
+      "actions": [
+        "[walk] <kitchen> (11)",
+        "[walk] <coffeemaker> (107)",
+        "[walk] <wineglass> (369)",
+        "[grab] <wineglass> (369)",
+        "[walk] <kitchentable> (72)",
+        "[putback] <wineglass> (369) <kitchentable> (72)",
+        "[walk] <coffeemaker> (107)",
+        "[walk] <coffeemaker> (107)",
+        "[walk] <coffeemaker> (107)",
+        "[walk] <coffeemaker> (107)",
+        "[walk] <coffeemaker> (107)",
+        "[walk] <coffeemaker> (107)",
+        "[walk] <coffeemaker> (107)",
+        "[walk] <coffeemaker> (107)",
+        "[walk] <kitchentable> (72)",
+        "[walk] <coffeemaker> (107)",
+        "[walk] <coffeemaker> (107)",
+        "[walk] <coffeemaker> (107)",
+        "[walk] <coffeemaker> (107)",
+        "[walk] <coffeemaker> (107)",
+        "[walk] <coffeemaker> (107)",
+        "[walk] <kitchentable> (72)",
+        "[walk] <coffeemaker> (107)",
+        "[walk] <coffeemaker> (107)",
+        "[walk] <coffeemaker> (107)",
+        "[walk] <wineglass> (369)",
+        "[grab] <wineglass> (369)",
+        "[walk] <kitchentable> (72)",
+        "[putback] <wineglass> (369) <kitchentable> (72)",
+        "[walk] <coffeemaker> (107)"
+      ],
+      "unity_failed_executions": 0,
+      "jev_usage": {
+        "calls": 611,
+        "input_tokens": 1920452,
+        "output_tokens": 523879,
+        "estimated_usd": 0.08065898400000002,
+        "models": [
+          "jev-1.13.0"
+        ]
+      }
+    },
+    {
+      "case": "seen_novel_simple",
+      "task": "put_fridge",
+      "goal": "put 1 milk inside fridge",
+      "status": "success",
+      "success": true,
+      "actions": [
+        "[walk] <milk> (369)",
+        "[grab] <milk> (369)",
+        "[walk] <fridge> (103)",
+        "[open] <fridge> (103)",
+        "[putin] <milk> (369) <fridge> (103)"
+      ],
+      "unity_failed_executions": 0,
+      "jev_usage": {
+        "calls": 34,
+        "input_tokens": 121689,
+        "output_tokens": 36356,
+        "estimated_usd": 0.005110938,
+        "models": [
+          "jev-1.13.0"
+        ]
+      }
+    },
+    {
+      "case": "seen_novel_comp2",
+      "task": "unseen_comp",
+      "goal": "put 1 coffeepot inside fridge; put 1 wineglass inside dishwasher",
+      "status": "success",
+      "success": true,
+      "actions": [
+        "[walk] <coffeepot> (369)",
+        "[grab] <coffeepot> (369)",
+        "[walk] <fridge> (103)",
+        "[open] <fridge> (103)",
+        "[putin] <coffeepot> (369) <fridge> (103)",
+        "[walk] <wineglass> (370)",
+        "[grab] <wineglass> (370)",
+        "[walk] <dishwasher> (104)",
+        "[open] <dishwasher> (104)",
+        "[putin] <wineglass> (370) <dishwasher> (104)"
+      ],
+      "unity_failed_executions": 0,
+      "jev_usage": {
+        "calls": 90,
+        "input_tokens": 333855,
+        "output_tokens": 97994,
+        "estimated_usd": 0.014021910000000002,
+        "models": [
+          "jev-1.13.0"
+        ]
+      }
+    },
+    {
+      "case": "unseen_simple",
+      "task": "put_fridge",
+      "goal": "put 1 wine inside fridge",
+      "status": "success",
+      "success": true,
+      "actions": [
+        "[walk] <wine> (330)",
+        "[grab] <wine> (330)",
+        "[walk] <fridge> (225)",
+        "[open] <fridge> (225)",
+        "[putin] <wine> (330) <fridge> (225)"
+      ],
+      "unity_failed_executions": 0,
+      "jev_usage": {
+        "calls": 31,
+        "input_tokens": 84797,
+        "output_tokens": 24157,
+        "estimated_usd": 0.0035614740000000002,
+        "models": [
+          "jev-1.13.0"
+        ]
+      }
+    },
+    {
+      "case": "unseen_comp",
+      "task": "setup_table_prepare_food",
+      "goal": "put 1 coffeepot on kitchentable; put 1 wineglass on kitchentable",
+      "status": "unity_episode_done",
+      "success": false,
+      "actions": [
+        "[walk] <kitchen> (126)",
+        "[walk] <coffeemaker> (229)",
+        "[walk] <wineglass> (330)",
+        "[grab] <wineglass> (330)",
+        "[walk] <kitchentable> (199)",
+        "[putback] <wineglass> (330) <kitchentable> (199)",
+        "[walk] <coffeemaker> (229)",
+        "[walk] <coffeemaker> (229)",
+        "[walk] <coffeemaker> (229)",
+        "[walk] <coffeemaker> (229)",
+        "[walk] <coffeemaker> (229)",
+        "[walk] <coffeemaker> (229)",
+        "[walk] <coffeemaker> (229)",
+        "[walk] <coffeemaker> (229)",
+        "[walk] <coffeemaker> (229)",
+        "[walk] <coffeemaker> (229)",
+        "[walk] <kitchentable> (199)",
+        "[walk] <coffeemaker> (229)",
+        "[walk] <coffeemaker> (229)",
+        "[walk] <coffeemaker> (229)",
+        "[walk] <coffeemaker> (229)",
+        "[walk] <coffeemaker> (229)",
+        "[walk] <coffeemaker> (229)",
+        "[walk] <coffeemaker> (229)",
+        "[walk] <coffeemaker> (229)",
+        "[walk] <coffeemaker> (229)",
+        "[walk] <coffeemaker> (229)",
+        "[walk] <coffeemaker> (229)",
+        "[switchon] <coffeemaker> (229)",
+        "[walk] <kitchentable> (199)"
+      ],
+      "unity_failed_executions": 0,
+      "jev_usage": {
+        "calls": 630,
+        "input_tokens": 1699631,
+        "output_tokens": 449423,
+        "estimated_usd": 0.071384502,
+        "models": [
+          "jev-1.13.0"
+        ]
+      }
+    },
+    {
+      "case": "unseen_novel_simple",
+      "task": "put_fridge",
+      "goal": "put 1 milk inside fridge",
+      "status": "success",
+      "success": true,
+      "actions": [
+        "[grab] <milk> (330)",
+        "[walk] <fridge> (225)",
+        "[open] <fridge> (225)",
+        "[putin] <milk> (330) <fridge> (225)"
+      ],
+      "unity_failed_executions": 0,
+      "jev_usage": {
+        "calls": 11,
+        "input_tokens": 29618,
+        "output_tokens": 8451,
+        "estimated_usd": 0.001243956,
+        "models": [
+          "jev-1.13.0"
+        ]
+      }
+    },
+    {
+      "case": "unseen_novel_comp2",
+      "task": "unseen_comp",
+      "goal": "put 1 coffeepot inside fridge; put 1 wineglass inside dishwasher",
+      "status": "success",
+      "success": true,
+      "actions": [
+        "[walk] <coffeepot> (330)",
+        "[grab] <coffeepot> (330)",
+        "[walk] <fridge> (225)",
+        "[open] <fridge> (225)",
+        "[putin] <coffeepot> (330) <fridge> (225)",
+        "[walk] <wineglass> (331)",
+        "[grab] <wineglass> (331)",
+        "[walk] <dishwasher> (228)",
+        "[open] <dishwasher> (228)",
+        "[putin] <wineglass> (331) <dishwasher> (228)"
+      ],
+      "unity_failed_executions": 0,
+      "jev_usage": {
+        "calls": 107,
+        "input_tokens": 302097,
+        "output_tokens": 83753,
+        "estimated_usd": 0.012688074,
+        "models": [
+          "jev-1.13.0"
+        ]
+      }
+    }
+  ]
+}

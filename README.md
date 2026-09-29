@@ -77,6 +77,10 @@ The first task can be run alone before the pilot. If the pilot should reuse its
 result, copy `seen_simple.pik` and `seen_simple.json` into `results/pilot/datasets/`
 and `results/pilot/episodes/` respectively before starting the pilot.
 
+The completed local pilot and its limitations are recorded in
+[`docs/pilot-results.md`](docs/pilot-results.md), with compact trajectories in
+[`experiments/pilot-2026-09-29.json`](experiments/pilot-2026-09-29.json).
+
 ## Search and provenance
 
 Each real decision runs 20 Python-graph simulations by default. Like the
