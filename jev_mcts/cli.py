@@ -59,6 +59,7 @@ def main() -> int:
     generate_parser.add_argument("--task", default="put_fridge")
     generate_parser.add_argument("--mode", choices=["simple", "full"], default="simple")
     generate_parser.add_argument("--unseen-apartment", action="store_true")
+    generate_parser.add_argument("--unseen-item", action="store_true")
     generate_parser.add_argument("--seed", type=int, default=42)
     run_parser = sub.add_parser("run-one", help="run one actual Unity episode")
     run_parser.add_argument("--executable", type=Path, required=True)
@@ -69,6 +70,14 @@ def main() -> int:
     run_parser.add_argument("--simulations", type=int, default=20)
     run_parser.add_argument("--max-usd", type=float, default=5.0)
     run_parser.add_argument("--max-seconds", type=float, default=7200.0)
+    pilot_parser = sub.add_parser("pilot", help="run or resume the bounded eight-task pilot")
+    pilot_parser.add_argument("--executable", type=Path, required=True)
+    pilot_parser.add_argument("--priors", type=Path, default=Path("results/priors"))
+    pilot_parser.add_argument("--output", type=Path, default=Path("results/pilot"))
+    pilot_parser.add_argument("--seed", type=int, default=42)
+    pilot_parser.add_argument("--simulations", type=int, default=20)
+    pilot_parser.add_argument("--max-usd", type=float, default=5.0)
+    pilot_parser.add_argument("--max-seconds", type=float, default=7200.0)
     args = parser.parse_args()
     if args.command == "doctor":
         return doctor()
@@ -96,6 +105,7 @@ def main() -> int:
             task=args.task,
             mode=args.mode,
             unseen_apartment=args.unseen_apartment,
+            unseen_item=args.unseen_item,
             seed=args.seed,
         )
         print(f"generated task dataset: {path}")
@@ -117,6 +127,17 @@ def main() -> int:
         print(f"steps: {len(result['steps'])}")
         print(f"Jev usage: {result['jev_usage']}")
         return 0 if result["status"] == "success" else 1
+    if args.command == "pilot":
+        from .pilot import run_pilot
+
+        result = run_pilot(
+            args.executable.resolve(), args.priors.resolve(), args.output.resolve(),
+            seed=args.seed, simulations=args.simulations,
+            max_usd=args.max_usd, max_seconds=args.max_seconds,
+        )
+        print(f"pilot: {result['status']}; completed: {result['completed']}/8; successes: {result['successes']}/8")
+        print(f"Jev usage: {result['jev_usage']}")
+        return 0 if result["status"] == "complete" else 1
     return 2
 
 

@@ -11,7 +11,7 @@ from pathlib import Path
 from typing import Any
 
 from .belief import BeliefState
-from .jev import BudgetExceeded, JevClient
+from .jev import BudgetExceeded, JevClient, Usage
 from .policy import JevPolicy
 from .search import MCTS
 from .virtualhome import (
@@ -41,6 +41,7 @@ def generate_one(
     task: str = "put_fridge",
     mode: str = "simple",
     unseen_apartment: bool = False,
+    unseen_item: bool = False,
     seed: int = 42,
     port: int = 8191,
 ) -> Path:
@@ -61,11 +62,20 @@ def generate_one(
     ]
     if unseen_apartment:
         command.append("--unseen-apartment")
+    if unseen_item:
+        command.append("--unseen-item")
     environment = os.environ.copy()
     environment["PYTHONPATH"] = str(RUNTIME_ROOT) + os.pathsep + environment.get("PYTHONPATH", "")
     (RUNTIME_ROOT / "vh/dataset").mkdir(parents=True, exist_ok=True)
     subprocess.run(command, cwd=RUNTIME_ROOT, env=environment, check=True, timeout=900)
-    suffix = "unseen_apartment" if unseen_apartment else "seen"
+    if unseen_item:
+        suffix = "unseen_composition_unseen_item" if task == "unseen_comp" else "unseen_item"
+    elif unseen_apartment:
+        suffix = "unseen_apartment"
+    elif task == "unseen_comp":
+        suffix = "unseen_composition"
+    else:
+        suffix = "seen"
     generated = RUNTIME_ROOT / f"vh/dataset/env_task_set_1_{mode}_{suffix}.pik"
     if not generated.is_file():
         raise RuntimeError(f"generator did not produce {generated}")
@@ -85,17 +95,32 @@ def run_one(
     max_usd: float = 5.0,
     max_seconds: float = 7200.0,
     port: int = 8184,
+    usage: Usage | None = None,
 ) -> dict[str, Any]:
     """Run one actual Unity task with Jev priors and source-style MCTS."""
     object_priors = json.loads((priors_directory / "obj_commonsense.json").read_text())
     furniture_priors = json.loads((priors_directory / "fur_commonsense.json").read_text())
     vocabulary = load_vocabulary()
     deadline = time.monotonic() + max_seconds
-    client = JevClient(max_usd=max_usd, deadline=deadline)
+    client = JevClient(max_usd=max_usd, deadline=deadline, usage=usage)
+    prior_result = json.loads(output.read_text()) if output.exists() else None
+    prior_episode_usage = Usage.from_dict(prior_result.get("jev_usage", {})) if prior_result else Usage()
+    usage_before = Usage.from_dict(client.usage.as_dict())
+
+    def episode_usage() -> dict[str, Any]:
+        previous = Usage(
+            calls=client.usage.calls - usage_before.calls,
+            input_tokens=client.usage.input_tokens - usage_before.input_tokens,
+            output_tokens=client.usage.output_tokens - usage_before.output_tokens,
+            models=set(client.usage.models),
+        )
+        previous.add(prior_episode_usage)
+        return previous.as_dict()
+
     policy = JevPolicy(client)
     search = MCTS(policy, simulations=simulations, seed=seed)
-    task = UnityTask(dataset, executable, vocabulary, seed=seed, port=port)
-    result: dict[str, Any] = {
+    task = None
+    result: dict[str, Any] = prior_result or {
         "dataset": str(dataset),
         "seed": seed,
         "simulations_per_action": simulations,
@@ -105,7 +130,10 @@ def run_one(
         "steps": [],
         "started_at": time.time(),
     }
+    result["status"] = "running"
+    result.pop("error", None)
     try:
+        task = UnityTask(dataset, executable, vocabulary, seed=seed, port=port)
         observation, full_graph = task.reset(0)
         goal_spec = task.goal_spec
         result["goal"] = goal_text(task.task_goal, full_graph)
@@ -118,7 +146,16 @@ def run_one(
         belief = BeliefState(planning_graph, object_priors, furniture_priors)
         belief.observe(observation)
         history: list[str] = []
-        for step_number in range(30):
+        for old_step in result["steps"]:
+            action = old_step["action"]
+            observation, finished, _, info = task.step(action)
+            if bool(info.get("failed_exec", False)) != old_step["unity_failed_execution"]:
+                raise RuntimeError("Unity replay differs from saved action trajectory")
+            history.append(action)
+            belief.observe(observation)
+            if finished and old_step is not result["steps"][-1]:
+                raise RuntimeError("Unity replay finished before saved trajectory ended")
+        for step_number in range(len(history), 30):
             client.check_budget()
             actions = valid_actions(observation, vocabulary)
             if not actions:
@@ -145,7 +182,7 @@ def run_one(
                     for item in root.actions
                 },
             })
-            result["jev_usage"] = client.usage.as_dict()
+            result["jev_usage"] = episode_usage()
             save_json(output, result)
             if finished:
                 result["success"] = True
@@ -165,7 +202,8 @@ def run_one(
         raise
     finally:
         result["finished_at"] = time.time()
-        result["jev_usage"] = client.usage.as_dict()
+        result["jev_usage"] = episode_usage()
         save_json(output, result)
-        task.close()
+        if task is not None:
+            task.close()
     return result

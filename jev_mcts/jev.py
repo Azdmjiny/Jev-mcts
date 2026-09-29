@@ -33,6 +33,21 @@ class Usage:
     output_tokens: int = 0
     models: set[str] = field(default_factory=set)
 
+    @classmethod
+    def from_dict(cls, value: dict[str, Any]) -> Usage:
+        return cls(
+            calls=int(value.get("calls", 0)),
+            input_tokens=int(value.get("input_tokens", 0)),
+            output_tokens=int(value.get("output_tokens", 0)),
+            models=set(value.get("models", [])),
+        )
+
+    def add(self, other: Usage) -> None:
+        self.calls += other.calls
+        self.input_tokens += other.input_tokens
+        self.output_tokens += other.output_tokens
+        self.models.update(other.models)
+
     @property
     def estimated_usd(self) -> float:
         return self.input_tokens * PRICE_PER_MILLION_INPUT_TOKENS_USD / 1_000_000
