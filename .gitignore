@@ -9,3 +9,5 @@ results/
 *.pik
 *.x86_64
 *.app/
+*.egg-info/
+port_*.txt

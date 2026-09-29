@@ -79,10 +79,14 @@ class BeliefState:
                 updated = copy.deepcopy(observed_nodes[int(node["id"])])
                 self.base_graph["nodes"][index] = updated
                 self.nodes[int(node["id"])] = updated
-        self.visible_edges = copy.deepcopy(observation["edges"])
+        self.visible_edges = [
+            copy.deepcopy(edge)
+            for edge in observation["edges"]
+            if int(edge["from_id"]) in self.nodes and int(edge["to_id"]) in self.nodes
+        ]
         observed_positions = {
             int(edge["from_id"]): Position(edge["relation_type"], int(edge["to_id"]))
-            for edge in observation["edges"]
+            for edge in self.visible_edges
             if edge["relation_type"] in POSITION_RELATIONS
             and int(edge["from_id"]) in self.distributions
             and edge["relation_type"] in self.tracked_relations[int(edge["from_id"])]

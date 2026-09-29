@@ -8,7 +8,7 @@ version = "0.1.0"
 description = "Jev-guided Monte Carlo tree search for VirtualHome tasks"
 requires-python = ">=3.10"
 dependencies = [
-  "numpy>=1.24,<3",
+  "numpy>=1.24,<2",
 ]
 
 [project.optional-dependencies]
@@ -19,6 +19,10 @@ virtualhome = [
   "scipy>=1.10",
   "requests>=2.31",
   "ipdb>=0.13",
+  "opencv-python-headless>=4.8,<4.12",
+  "pillow>=10",
+  "profilehooks>=1.12",
+  "termcolor>=2",
 ]
 
 [project.scripts]

@@ -53,6 +53,22 @@ def main() -> int:
     priors_parser = sub.add_parser("prepare-priors", help="query Jev for location priors")
     priors_parser.add_argument("--output", type=Path, default=Path("results/priors"))
     priors_parser.add_argument("--max-usd", type=float, default=5.0)
+    generate_parser = sub.add_parser("generate-one", help="generate one Unity task")
+    generate_parser.add_argument("--executable", type=Path, required=True)
+    generate_parser.add_argument("--output", type=Path, default=Path("results/datasets/seen_simple.pik"))
+    generate_parser.add_argument("--task", default="put_fridge")
+    generate_parser.add_argument("--mode", choices=["simple", "full"], default="simple")
+    generate_parser.add_argument("--unseen-apartment", action="store_true")
+    generate_parser.add_argument("--seed", type=int, default=42)
+    run_parser = sub.add_parser("run-one", help="run one actual Unity episode")
+    run_parser.add_argument("--executable", type=Path, required=True)
+    run_parser.add_argument("--dataset", type=Path, default=Path("results/datasets/seen_simple.pik"))
+    run_parser.add_argument("--priors", type=Path, default=Path("results/priors"))
+    run_parser.add_argument("--output", type=Path, default=Path("results/episodes/seen_simple.json"))
+    run_parser.add_argument("--seed", type=int, default=42)
+    run_parser.add_argument("--simulations", type=int, default=20)
+    run_parser.add_argument("--max-usd", type=float, default=5.0)
+    run_parser.add_argument("--max-seconds", type=float, default=7200.0)
     args = parser.parse_args()
     if args.command == "doctor":
         return doctor()
@@ -71,6 +87,36 @@ def main() -> int:
         print(f"furniture priors: {furniture_path}")
         print(f"Jev usage: {client.usage.as_dict()}")
         return 0
+    if args.command == "generate-one":
+        from .experiment import generate_one
+
+        path = generate_one(
+            args.executable.resolve(),
+            args.output.resolve(),
+            task=args.task,
+            mode=args.mode,
+            unseen_apartment=args.unseen_apartment,
+            seed=args.seed,
+        )
+        print(f"generated task dataset: {path}")
+        return 0
+    if args.command == "run-one":
+        from .experiment import run_one
+
+        result = run_one(
+            args.dataset.resolve(),
+            args.executable.resolve(),
+            args.priors.resolve(),
+            args.output.resolve(),
+            seed=args.seed,
+            simulations=args.simulations,
+            max_usd=args.max_usd,
+            max_seconds=args.max_seconds,
+        )
+        print(f"status: {result['status']}")
+        print(f"steps: {len(result['steps'])}")
+        print(f"Jev usage: {result['jev_usage']}")
+        return 0 if result["status"] == "success" else 1
     return 2
 
 
