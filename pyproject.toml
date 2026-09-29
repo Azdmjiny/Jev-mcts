@@ -9,7 +9,6 @@ description = "Jev-guided Monte Carlo tree search for VirtualHome tasks"
 requires-python = ">=3.10"
 dependencies = [
   "numpy>=1.24,<3",
-  "typesafe-sdk>=0.7,<1",
 ]
 
 [project.optional-dependencies]

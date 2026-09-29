@@ -50,9 +50,27 @@ def main() -> int:
     parser = argparse.ArgumentParser(prog="jev-mcts")
     sub = parser.add_subparsers(dest="command", required=True)
     sub.add_parser("doctor", help="check credentials and local Unity executable")
+    priors_parser = sub.add_parser("prepare-priors", help="query Jev for location priors")
+    priors_parser.add_argument("--output", type=Path, default=Path("results/priors"))
+    priors_parser.add_argument("--max-usd", type=float, default=5.0)
     args = parser.parse_args()
     if args.command == "doctor":
         return doctor()
+    if args.command == "prepare-priors":
+        from .jev import JevClient
+        from .prior import generate_priors
+
+        client = JevClient(max_usd=args.max_usd)
+        object_path, furniture_path = generate_priors(
+            client, Path(__file__).resolve().parent.parent / "data/object_info.json", args.output
+        )
+        (args.output / "usage.json").write_text(
+            __import__("json").dumps(client.usage.as_dict(), indent=2)
+        )
+        print(f"object priors: {object_path}")
+        print(f"furniture priors: {furniture_path}")
+        print(f"Jev usage: {client.usage.as_dict()}")
+        return 0
     return 2
 
 
